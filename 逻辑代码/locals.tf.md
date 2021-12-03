@@ -1,4 +1,4 @@
-# `locals.tf` 中定义的 `local`
+# `local` 原则
 
 为提升代码可读性，可将一些复杂的表达式，或是重复出现的表达式抽取成一个 `local` 定义。凡是不依赖 `resource` 以及 `data` 的 `local` 定义都应集中于 `locals.tf` 文件。
 
