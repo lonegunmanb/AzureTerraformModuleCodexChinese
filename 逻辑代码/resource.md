@@ -38,17 +38,20 @@ resource "azurerm_network_security_group" "this" {
 }
 ```
 
-## Meta-Arguments 的顺序
+## `resource` 块的 Meta-Arguments 的顺序
 
-`resource` 上声明的 Meta-Argument 应以文档中介绍的顺序出现：
+以下 Meta-Argument 在 `resource` 块中应声明在最上方，按顺序排列：
 
-* `depends_on`
-* `count`
-* `for_each`
-* `provider`
-* `lifecycle`
+1. `provider`
+2. `count`
+3. `for_each`
 
-其中，`lifecycle` 块中的参数应以一下顺序出现：
+以下 Meta-Argument 在 `resource` 块中应声明在最下方，按顺序排列：
+
+1. `depends_on`
+2. `lifecycle`
+
+其中，`lifecycle` 块中的参数应以以下顺序出现：
 
 * `create_before_destroy`
 * `prevent_destroy`
@@ -56,7 +59,25 @@ resource "azurerm_network_security_group" "this" {
 
 `depends_on` 和 `ignore_changes` 的成员以字母顺序排序。
 
-## 对于可以定义 `tags` 的资源，始终应该通过 `variable` 暴露个 Module 调用者，使其可以设置 `tags`
+`resource` 块中的 Meta-Argument 与普通 Argument 之间以空行分隔。
+
+## `module` 块的 Meta-Arguments 的顺序
+
+以下 Meta-Argument 在 `resource` 块中应声明在最上方，按顺序排列：
+
+1. `source`
+2. `version`
+3. `count`
+4. `for_each`
+
+以下 Meta-Argument 在 `resource` 块中应声明在最下方，按顺序排列：
+
+1. `depends_on`
+2. `providers`
+
+## 传递给 `provider`, `depends_on`, `lifecycle` 块中的 `ignore_changes` 中的值，不允许使用双引号
+
+## 对于可以定义 `tags` 的资源，始终应该通过 `variable` 暴露给 Module 调用者，使其可以设置 `tags`
 
 ## 根据输入参数是否为 `null` 来判定是否创建某种资源的场景
 

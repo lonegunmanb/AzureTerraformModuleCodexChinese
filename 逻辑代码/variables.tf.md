@@ -10,6 +10,8 @@
 4. 各种选填项(`tags`除外)，以字母序排序
 5. `tags` （如果有的话）
 
+定义了 `default` 的 `variable` 为必填项，反之则为选填项。
+
 ## `variable` 原则上遵循 "判例法"
 
 应尽力确保 `variable` 的 `name`、`description`、`validation` 与上下游 `resource`、`data` 定义一致，并且确保不同模块间起相同作用的 `variable` 保持一致。
@@ -144,5 +146,15 @@ resource "azurerm_network_security_rule" "example" {
 ## 对于废弃 `variable` 的处理
 
 有时我们会发现某些 `variable` 名称已不再合适，或是数据类型需要改变，我们需要保证在同一 Major 版本中的向前兼容，不允许直接进行修改，而是应将之移动到一个独立的 `variables-deprecated.tf` 文件中，然后在 `variable.tf` 中定义新变量，并且要在代码中做好兼容性逻辑。
+
+废弃的 `variable` 必须在 `description` 的开头标注废弃，并指示新的替代 `variable` 名称，例如：
+
+```hcl
+variable "enable_network_security_group" {
+  type        = string
+  default     = null
+  description = "DEPRECATED, use `network_security_group_enabled` instead; Whether to generate a network security group and assign it to the subnet. Changing this forces a new resource to be created."
+}
+```
 
 可以在 Major 版本升级时清理 `variables-deprecated.tf` 中的过时变量，以及相关的兼容性逻辑。

@@ -2,11 +2,15 @@
 
 `versions.tf` 文件中应仅包含一个 `terraform` 块。
 
-`terraform` 块第一行应定义 `required_version = ">= 1.0"`
+`terraform` 块第一行应定义 `required_version = ">= 1.1"`
 
-由于 HashiCorp 承诺 1.X 版本的向前兼容，为最大限度地扩展支持的 Terraform 版本，统一规定 `required_version` 的值必须为 `">= 1.0"`。
+由于 HashiCorp 承诺 1.X 版本的向前兼容，为最大限度地扩展支持的 Terraform 版本，统一规定 `required_version` 的值必须为 `">= 1.1"`。
 
 `terraform` 块中应包含一个 `required_providers` 块，内容是使用的 Provider 的版本约束。Provider 版本约束声明应以字母序排序，块内的赋值也应按照字母序排序。`version` 约束必须使用 `>=`，如无特殊情况，不允许使用其他约束方式。
+
+模块中所用到的所有 Provider 都必须在 `required_providers` 中有定义。
+
+由于 Provider 的 Major 版本升级可能会引入破坏性变更，所以对 Provider 的 Major 版本要求的变更必须伴随 Module 的 Major 版本变更。
 
 ## 在 Module 中声明 Provider
 

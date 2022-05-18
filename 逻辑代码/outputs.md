@@ -8,7 +8,9 @@
 
 应避免无原则地将 Module 中定义的所有 `resource` 或 `data` 作为 `output` 输出的做法。
 
-通过 `output` 输出的信息应仅够 Module 调用者将 Module 与其他 Module 组合使用（例如输出聚合根 `resource` 的 `id`）。
+所有
+
+如果一个 Argument 或是 Attribute 可以通过 `data` 查询到，那么原则上就不应通过 `output` 输出。
 
 ## 包含机密数据的 `output` 应声明 `sensitive = true`
 

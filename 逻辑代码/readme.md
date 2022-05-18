@@ -1,4 +1,6 @@
 ## Module 的逻辑代码
+<!-- TODO:待 《Terraform Style Guide》正式发布后补充此处链接 -->
+Module 的所有 `.tf` 代码都必须首先遵循 [Terraform Style Guide]() 的规定。
 
 Module 的逻辑代码应由以下几部分组成
 
