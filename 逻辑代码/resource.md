@@ -1,8 +1,6 @@
 # 含有资源定义的代码文件原则
 
-资源声明代码应按其业务领域聚合存放。如果 Module 定义的资源数量较少，或是类型高度内聚 （例如多个属于同一业务领域的资源），可以由一个 `main.tf` 定义；如果涉及多个不同业务领域的资源，需要以能代表其分类的文件名分别存放。模块的核心业务领域应该是中定义在 `main.tf` 文件中
-
-[示例](https://github.com/cloudposse/terraform-aws-eks-cluster)
+资源声明代码应按其业务领域聚合存放。如果 Module 定义的资源数量较少，或是类型高度内聚 （例如多个属于同一业务领域的资源），可以由一个 `main.tf` 定义；如果涉及多个不同业务领域的资源，需要以能代表其分类的文件名分别存放，例如：`virtual_machines.tf`, `network.tf`, `storage.tf` 等。模块的核心业务领域应该是中定义在 `main.tf` 文件中.
 
 ## 同一个文件中 `resource` 和 `data` 定义的顺序 。
 
@@ -16,9 +14,7 @@
 
 如果表达式中涉及到 `resource` 或是 `data`，该 `local` 定义的位置，在表达式所涉及的 `resource` 或是 `data` 中最重要的那一个的定义块的下方。同一 `resource` 或是 `data` 块下方至多只能有一个 `locals` 块，所有定义于此的 `local` 都应该以字母序定义在该块中。两个 `local` 之间不应空行。
 
-## `resource` 和 `data` 的 Arguments 声明顺序
-
-定义 `resource` 和 `data` 时，Arguments 的声明顺序应保持与文档一致。
+`locals.tf` 文件因为可能会被用于单元测试，涉及 `resource` 与 `data` 的 `local` 不应该被声明在 `locals.tf` 文件中。
 
 ## 使用 `count` 和 `for_each`
 
@@ -38,13 +34,54 @@ resource "azurerm_network_security_group" "this" {
 }
 ```
 
-## `resource` 块的 Meta-Arguments 的顺序
+## `resource` 块与 `data` 块的内部顺序
 
-以下 Meta-Argument 在 `resource` 块中应声明在最上方，按顺序排列：
+`resource` 和 `data` 块中的赋值语句分为三种：Argument 、Meta-Argument与 Nested Block。Argument 的赋值表达式为参数名后接 `=` 的，例如：
+
+```hcl
+location = azurerm_resource_group.example.location
+```
+
+又或者：
+
+```hcl
+tags = {
+  environment = "Production"
+}
+```
+
+Nested Block 的赋值表达式为参数名后接一个 `{}` 块，例如：
+
+```hcl
+subnet {
+  name           = "subnet1"
+  address_prefix = "10.0.1.0/24"
+}
+```
+
+Meta-Argument 为所有 `resource` 与 `data` 块都可以声明的赋值语句，有：
+
+* `count`
+* `depends_on`
+* `for_each`
+* `lifecycle`
+* `provider`
+
+`resource` 与 `data` 块内部赋值语句的声明顺序应为：
+
+以下 Meta-Argument 在 `resource` 和 `data` 块中应声明在最上方，按顺序排列：
 
 1. `provider`
 2. `count`
 3. `for_each`
+
+然后是必填的 Argument，以字母顺序排列
+
+然后是选填的 Argument，以字母顺序排列
+
+然后是必填的 Nested Block，以字母顺序排列
+
+然后是选填的 Nested Block，以字母顺序排列
 
 以下 Meta-Argument 在 `resource` 块中应声明在最下方，按顺序排列：
 
@@ -54,26 +91,57 @@ resource "azurerm_network_security_group" "this" {
 其中，`lifecycle` 块中的参数应以以下顺序出现：
 
 * `create_before_destroy`
-* `prevent_destroy`
 * `ignore_changes`
+* `prevent_destroy`
 
 `depends_on` 和 `ignore_changes` 的成员以字母顺序排序。
 
-`resource` 块中的 Meta-Argument 与普通 Argument 之间以空行分隔。
+Meta-Argument、Argument、Nested Block 之间，以空行分隔。
 
-## `module` 块的 Meta-Arguments 的顺序
+以 `dynamic` 形式出现的  Nested Block，以 `dynamic` 后的名字作为排序依据，例如：
+
+```hcl
+  dynamic "linux_profile" {
+    for_each = var.admin_username == null ? [] : ["linux_profile"]
+
+    content {
+      admin_username = var.admin_username
+
+      ssh_key {
+        key_data = replace(coalesce(var.public_ssh_key, tls_private_key.ssh[0].public_key_openssh), "\n", "")
+      }
+    }
+  }
+```
+
+该 `dynamic` 块视同一个 `linux_profile` 块进行排序，Meta-Argument、Argument、Nested Block 之间，以空行分隔。
+
+在 Nested Block 中的代码也按照上述规则排序，
+
+## `module` 块的内部顺序
 
 以下 Meta-Argument 在 `resource` 块中应声明在最上方，按顺序排列：
 
 1. `source`
 2. `version`
+
+然后是
+
 3. `count`
 4. `for_each`
+
+`source`、`version` 与 `count`、`for_each` 之间应以空行分隔。
+
+然后是必填的 Argument，以字母顺序排列
+
+然后是选填的 Argument，以字母顺序排列
 
 以下 Meta-Argument 在 `resource` 块中应声明在最下方，按顺序排列：
 
 1. `depends_on`
 2. `providers`
+
+Argument 部分与 Meta-Argument 之间应以空行分隔。
 
 ## 传递给 `provider`, `depends_on`, `lifecycle` 块中的 `ignore_changes` 中的值，不允许使用双引号
 
@@ -116,7 +184,7 @@ variable "security_group" {
 
 仅在根据输入参数是否为 `null` 来判定是否创建某种资源的场景下使用该技巧。
 
-## 可选的 Embedded Object Argument 要配合 `dynamic`
+## 可选的 Nested Object Argument 要配合 `dynamic`
 
 一个社区的例子是：
 
@@ -125,6 +193,7 @@ resource "azurerm_kubernetes_cluster" "main" {
   ...
   dynamic "identity" {
     for_each = var.client_id == "" || var.client_secret == "" ? [1] : []
+
     content {
       type                      = var.identity_type
       user_assigned_identity_id = var.user_assigned_identity_id
@@ -134,10 +203,10 @@ resource "azurerm_kubernetes_cluster" "main" {
 }
 ```
 
-请参照例子中的写法，如果只是想有条件地声明某个 Embedded 块时，请使用：
+请参照例子中的写法，如果只是想有条件地声明某个 Nested 块时，请使用：
 
 ```hcl
-for_each = <condition> ? [1] : []
+for_each = <condition> ? [<some_item>] : []
 ```
 
 ## 为可空的表达式配置默认值时使用 `coalesce`
@@ -147,39 +216,3 @@ for_each = <condition> ? [1] : []
 ```hcl
 coalesce(var.new_network_security_group_name, "${var.subnet_name}-nsg")
 ```
-
-## 应使用特性开关保证版本的向前兼容，避免升级引发的令人意外的变更
-
-举例，上一个 release 版本号是 `v1.2.1`，此时我们希望提交一个 Pull Request，添加一个新的资源：
-
-```hcl
-resource "azurerm_route_table" "this" {
-  location            = local.location
-  name                = coalesce(var.new_route_table_name, "${var.subnet_name}-rt")
-  resource_group_name = var.resource_group_name
-}
-```
-
-这样做会导致用户一旦升级了 Module 版本，会惊讶地看到新生成的 Plan 中多了一个新的待创建的 `azurerm_route_table`。
-
-正确的做法是必须为之设计一个特性开关，并且默认关闭：
-
-```hcl
-variable "create_route_table" {
-  type    = bool
-  default = false
-}
-
-resource "azurerm_route_table" "this" {
-  count               = var.create_route_table ? 1 : 0
-  location            = local.location
-  name                = coalesce(var.new_route_table_name, "${var.subnet_name}-rt")
-  resource_group_name = var.resource_group_name
-}
-```
-
-同理，如果为 Resource 设置新的 Argument 时，应使它的默认值为 `null`。如果设置一个新的 Embedded Object 时，应使用 `dynamic`，并默认不生成该块。
-
-## 必须引入破坏性变更
-
-如果因为某些原因，必须引入破坏性变更，则需要

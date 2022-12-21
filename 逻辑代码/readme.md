@@ -9,7 +9,7 @@ Module 的逻辑代码应由以下几部分组成
 * 所有不依赖于 `resource` 以及 `data` 的，包含计算逻辑的表达式，均以 `local` 的形式定义于 `locals.tf` 文件
 * 包含 `terraform` 块的 `versions.tf` 文件
 * 包含有资源定义的代码文件
-* (可选) 包含废弃输入参数和输出值的 `variables-deprecated.tf` 和 `outputs-deprecated.tf`
+* (可选) 包含废弃输入参数和输出值的 `deprecated-variables.tf` 和 `deprecated-outputs.tf`
 * 其他
 
 ## 为什么需要一个独立的 `locals.tf` 文件？

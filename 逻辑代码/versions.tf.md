@@ -4,7 +4,7 @@
 
 `terraform` 块第一行应定义 `required_version = ">= 1.1"`
 
-由于 HashiCorp 承诺 1.X 版本的向前兼容，为最大限度地扩展支持的 Terraform 版本，统一规定 `required_version` 的值必须为 `">= 1.1"`。
+由于 HashiCorp 承诺 1.X 版本的向前兼容，为最大限度地扩展支持的 Terraform 版本，统一规定如无特别理由，`required_version` 的值必须为 `">= 1.1"`。
 
 `terraform` 块中应包含一个 `required_providers` 块，内容是使用的 Provider 的版本约束。Provider 版本约束声明应以字母序排序，块内的赋值也应按照字母序排序。`version` 约束必须使用 `>=`，如无特殊情况，不允许使用其他约束方式。
 
