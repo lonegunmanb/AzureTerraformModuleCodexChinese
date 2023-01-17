@@ -1,6 +1,14 @@
 # 含有资源定义的代码文件原则
 
-资源声明代码应按其业务领域聚合存放。如果 Module 定义的资源数量较少，或是类型高度内聚 （例如多个属于同一业务领域的资源），可以由一个 `main.tf` 定义；如果涉及多个不同业务领域的资源，需要以能代表其分类的文件名分别存放，例如：`virtual_machines.tf`, `network.tf`, `storage.tf` 等。模块的核心业务领域应该是中定义在 `main.tf` 文件中.
+资源声明代码应按其业务领域聚合存放。如果 Module 定义的资源数量较少，或是类型高度内聚 （例如多个属于同一业务领域的资源），可以由一个 `main.tf` 定义；如果涉及多个不同业务领域的资源，需要以能代表其分类的文件名分别存放，例如：`virtual_machines.tf`, `network.tf`, `storage.tf` 等。模块的核心业务领域应该是中定义在 `main.tf` 文件中。
+
+## Module 中应该定义哪些 `resource`？
+
+我们假设有一个名为 `terraform-azurerm-vm` 的 Module，可以创建虚拟机相关的资源。
+
+判断一个 `resource` 该不该放进整个 Module 的标准是：除非整个 `resource` 就是编写该 Module 的目的（例如 `azurerm_linux_virtual_machine` 之于 `terraform-azurerm-vm`），否则，只有完全“属于”这个 Module 的 `resource` 应该被放进 Module。
+
+举个例子，对于 `azurerm_linux_virtual_machine` 来说，它可以搭配 `azurerm_dedicated_host_group` 使用。但很明显，一个 `azurerm_dedicated_host_group` 不会专属这一台 `virtual_machine`，所以 `azurerm_dedicated_host_group` **不应该**被放置在 `terraform-azurerm-vm` 里。
 
 ## 同一个文件中 `resource` 和 `data` 定义的顺序 。
 
@@ -120,7 +128,7 @@ Meta-Argument、Argument、Nested Block 之间，以空行分隔。
 
 ## `module` 块的内部顺序
 
-以下 Meta-Argument 在 `resource` 块中应声明在最上方，按顺序排列：
+以下 Meta-Argument 在 `module` 块中应声明在最上方，按顺序排列：
 
 1. `source`
 2. `version`
@@ -215,4 +223,39 @@ for_each = <condition> ? [<some_item>] : []
 
 ```hcl
 coalesce(var.new_network_security_group_name, "${var.subnet_name}-nsg")
+```
+
+有一种情况不适用 `coalesce` 函数，例如：
+
+```hcl
+coalesce(var.a, var.b)
+```
+
+如果 `var.a` 和 `var.b` 有可能同时为 `null`，那么 `coalesce` 在两者都为 `null` 时可能会有问题，这时可以使用 `var.a == null ? var.b : var.a`，或者 `try(coalesce(var.a, var.b), null)`。
+
+## 灵活使用 `try` 函数
+
+例如以下资源定义：
+
+```hcl
+resource "azurerm_public_ip" "pip" {
+  count = var.create_public_ip ?  : 0
+
+  allocation_method   = "Dynamic"
+  location            = local.resource_group.location
+  name                = "pip-${random_id.id.hex}"
+  resource_group_name = local.resource_group.name
+}
+```
+
+我们使用它时可以不用判断 `var.create_public_ip` 的值，使用 `try` 函数简化代码：
+
+
+```hcl
+ip_configurations = [
+  {
+    public_ip_address_id = try(azurerm_public_ip.pip[0].id, null)
+    primary              = true
+  }
+]
 ```
