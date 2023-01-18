@@ -6,7 +6,7 @@
 
 我们假设有一个名为 `terraform-azurerm-vm` 的 Module，可以创建虚拟机相关的资源。
 
-判断一个 `resource` 该不该放进整个 Module 的标准是：除非整个 `resource` 就是编写该 Module 的目的（例如 `azurerm_linux_virtual_machine` 之于 `terraform-azurerm-vm`），否则，只有完全“属于”这个 Module 的 `resource` 应该被放进 Module。
+判断一个 `resource` 该不该放进整个 Module 的标准是：只有完全“属于”这个 Module 的 `resource` 应该被放进 Module。
 
 举个例子，对于 `azurerm_linux_virtual_machine` 来说，它可以搭配 `azurerm_dedicated_host_group` 使用。但很明显，一个 `azurerm_dedicated_host_group` 不会专属这一台 `virtual_machine`，所以 `azurerm_dedicated_host_group` **不应该**被放置在 `terraform-azurerm-vm` 里。
 

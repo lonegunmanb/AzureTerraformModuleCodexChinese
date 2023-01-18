@@ -68,35 +68,11 @@ variable "test_obj" {
 * 当要表达 `true`/`false` 时，使用 `bool` 类型而不是 `string` 或者 `number`
 * 使用 `string` 存储文本
 
-## 复杂的 `variable` 优先使用 `object` 类型
-
-曾经 `object` 类型有着这样那样的一些问题导致并不太实用，社区习惯于使用 `map(any)` 或是 `any` 来定义一组相互关联的复杂参数，然后再搭配使用 `lookup` 函数实现默认值的功能。
-
-Terraform 新增了对 [Optional Object Type Attribute](https://developer.hashicorp.com/terraform/language/expressions/type-constraints#optional-object-type-attributes) 的支持，对于复杂类型的参数，推荐使用 `object`。
-
-`object` 类型的 `variable` 的 `description` 使用 [HEREDOC](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings) 语法，将类型定义复制过来，把原先的 `<field_name> = <type>` 改为 `<field_name> = "<description>"`，例如：
-
-```hcl
-variable "additional_unattend_contents" {
-  type = list(object({
-    content = string
-    setting = string
-  }))
-  description = <<-EOT
-  list(object({
-    content = "(Required) The XML formatted content that is added to the unattend.xml file for the specified path and component. Changing this forces a new resource to be created."
-    setting = "(Required) The name of the setting to which the content applies. Possible values are `AutoLogon` and `FirstLogonCommands`. Changing this forces a new resource to be created."
-  }))
-  EOT
-  default     = []
-}
-```
-
-假如 `object` 中有一个成员会被作为 `sensitive` 的参数使用，那么整个 `variable` 必须声明为 `sensitive = true`。
-
 ## `variable` 的 `validation` 的 `error_message` 应使用完整的句子描述期待的数据所必须要遵守的约束
 
 ## 包含机密数据的 `variable` 应声明 `sensitive = true`
+
+假如 `object` 中有一个成员会被作为 `sensitive` 的参数使用，那么整个 `variable` 必须声明为 `sensitive = true`。
 
 ## 如果可能，尽可能声明 `nullable = false`
 
